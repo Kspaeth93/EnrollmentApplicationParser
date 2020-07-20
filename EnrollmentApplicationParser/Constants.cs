@@ -1,6 +1,6 @@
 ﻿namespace EnrollmentApplicationParser
 {
-    class Constants
+    public class Constants
     {
         public const string INPUT_FILE_DIRECTORY = "..\\..\\..\\..\\InputFiles\\";
         

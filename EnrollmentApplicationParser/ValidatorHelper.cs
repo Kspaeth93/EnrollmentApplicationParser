@@ -2,16 +2,21 @@
 
 namespace EnrollmentApplicationParser
 {
-    static class ValidatorHelper
+    public static class ValidatorHelper
     {
         public static bool AreRequiredFieldsPresent(string entry)
         {
             bool isValid = true;
 
-            if (entry == null) isValid = false;
-
-            string[] entryData = entry.Split(",");
-            if (entryData.Length != Constants.EXPECTED_ENTRY_LENGTH) isValid = false;
+            if (entry == null)
+            {
+                isValid = false;
+            }
+            else
+            {
+                string[] entryData = entry.Split(",");
+                if (entryData.Length != Constants.EXPECTED_ENTRY_LENGTH) isValid = false;
+            }
 
             return isValid;
         }
@@ -46,8 +51,14 @@ namespace EnrollmentApplicationParser
         {
             bool isValid = true;
 
-            if (planType == null) isValid = false;
-            if (!Enum.IsDefined(typeof(Constants.PLAN_TYPE), planType)) isValid = false;
+            if (planType == null)
+            {
+                isValid = false;
+            }
+            else
+            {
+                if (!Enum.IsDefined(typeof(Constants.PLAN_TYPE), planType)) isValid = false;
+            }
 
             return isValid;
         }

@@ -5,7 +5,7 @@ using System.Linq;
 
 namespace EnrollmentApplicationParser
 {
-    class InputFileValidator
+    public class InputFileValidator
     {
         public IEnumerable<EnrollmentEntry> ProcessFile(string filePath)
         {

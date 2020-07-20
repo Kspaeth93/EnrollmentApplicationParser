@@ -2,7 +2,7 @@
 
 namespace EnrollmentApplicationParser
 {
-    class EnrollmentEntry
+    public class EnrollmentEntry
     {
         public Constants.STATUS status { get; private set; }
         public string firstName { get; private set; }
