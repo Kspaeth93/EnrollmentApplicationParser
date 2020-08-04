@@ -2,6 +2,7 @@
 using System.IO;
 using System.Collections.Generic;
 using System.Linq;
+using EnrollmentApplicationParser.BusinessRules;
 
 namespace EnrollmentApplicationParser
 {
@@ -78,30 +79,35 @@ namespace EnrollmentApplicationParser
                 effectiveDate = ValidatorHelper.CreateDateFromString(effectiveDateString);
             }
 
-            if (!IsValidDOB(dob)) status = Constants.STATUS.REJECTED;
-            if (!IsValidEffectiveDate(effectiveDate)) status = Constants.STATUS.REJECTED;
 
-            return new EnrollmentEntry(status, firstName, lastName, dob, planType, effectiveDate);
+            EnrollmentEntry enrollmentEntry = new EnrollmentEntry(firstName, lastName, dob, planType, effectiveDate);
+
+            // This is a placeholder.
+            // TODO: Create this list using factory pattern instead.
+            List<IBusinessRuleValidator> businessRuleValidators = new List<IBusinessRuleValidator>()
+            {
+                new DOBValidator(),
+                new EffectiveDateValidator()
+            };
+
+            enrollmentEntry.status = ProcessEntryBR(businessRuleValidators, enrollmentEntry);
+
+            return enrollmentEntry;
         }
 
-        private bool IsValidDOB(DateTime dob)
+        private Constants.STATUS ProcessEntryBR(List<IBusinessRuleValidator> businessRules, EnrollmentEntry entry)
         {
-            bool isValid = true;
+            Constants.STATUS status = Constants.STATUS.ACCEPTED;
 
-            if (dob == null) isValid = false;
-            if (dob > DateTime.Now.AddYears(-18)) isValid = false;
+            if (businessRules != null && businessRules.Count > 0)
+            {
+                foreach (IBusinessRuleValidator rule in businessRules)
+                {
+                    status = rule.ProcessBusinessRule(entry);
+                }
+            }
 
-            return isValid;
-        }
-
-        private bool IsValidEffectiveDate(DateTime effectiveDate)
-        {
-            bool isValid = true;
-
-            if (effectiveDate == null) isValid = false;
-            if (effectiveDate > DateTime.Now.AddDays(30)) isValid = false;
-
-            return isValid;
+            return status;
         }
     }
 }

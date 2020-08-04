@@ -4,14 +4,14 @@ namespace EnrollmentApplicationParser
 {
     public class EnrollmentEntry
     {
-        public Constants.STATUS status { get; private set; }
+        public Constants.STATUS status { get; set; }
         public string firstName { get; private set; }
         public string lastName { get; private set; }
         public DateTime dob { get; private set; }
         public Constants.PLAN_TYPE planType { get; private set; }
         public DateTime effectiveDate { get; private set; }
 
-        public EnrollmentEntry(Constants.STATUS status, string firstName, string lastName,
+        public EnrollmentEntry(string firstName, string lastName,
             DateTime dob, Constants.PLAN_TYPE planType, DateTime effectiveDate)
         {
             this.status = status;
