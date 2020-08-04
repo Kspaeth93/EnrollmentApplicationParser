@@ -1,4 +1,4 @@
-﻿namespace EnrollmentApplicationParser
+﻿namespace EnrollmentApplicationParser.BusinessRules
 {
     interface IBusinessRuleValidator
     {

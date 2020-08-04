@@ -3,6 +3,7 @@ using System.IO;
 using System.Collections.Generic;
 using System.Linq;
 using EnrollmentApplicationParser.BusinessRules;
+using EnrollmentApplicationParser.EntryRules;
 
 namespace EnrollmentApplicationParser
 {
@@ -32,55 +33,32 @@ namespace EnrollmentApplicationParser
 
         public EnrollmentEntry ProcessEntry(string entry)
         {
-            string firstName, lastName;
-            DateTime dob, effectiveDate;
-            Constants.PLAN_TYPE planType;
+            string[] entries = entry.Split(",");
+            EnrollmentEntry enrollmentEntry;
 
-            /* Entry is assumed to be ACCEPTED until proved otherwise. */
-            Constants.STATUS status = Constants.STATUS.ACCEPTED;
-
-            if (!ValidatorHelper.AreRequiredFieldsPresent(entry))
+            // This is a placeholder.
+            // TODO: Create this list using factory pattern instead.
+            List<IEntryRuleValidator> entryRuleValidators = new List<IEntryRuleValidator>()
             {
-                throw new ArgumentException(string.Format("Missing requierd fields in entry: {0}.", entry));
+                new RequiredFieldsValidator(),
+                new DateStringValidator(),
+                new PlanTypeValidator()
             };
 
-            string[] entryData = entry.Split(",");
-
-            firstName = entryData[0];
-            lastName = entryData[1];
-
-            string dobString = entryData[2];
-            if (!ValidatorHelper.IsDateStringValid(dobString))
+            if (!ValidateEntryRules(entryRuleValidators, entries))
             {
-                throw new ArgumentException(string.Format("The date '{0}' is not valid.", dobString));
+                throw new ArgumentException(string.Format("The entry '{0}' is invalid.", entry));
             }
             else
             {
-                dob = ValidatorHelper.CreateDateFromString(dobString);
+                enrollmentEntry = new EnrollmentEntry(
+                    entries[0], 
+                    entries[1],
+                    CreateDateFromString(entries[2]), 
+                    (Constants.PLAN_TYPE)Enum.Parse(typeof(Constants.PLAN_TYPE), entries[3]),
+                    CreateDateFromString(entries[4])
+                    );
             }
-
-            string planTypeString = entryData[3];
-            if (!ValidatorHelper.IsPlanTypeValid(planTypeString))
-            {
-                throw new ArgumentException(string.Format("The plan type '{0}' is not valid.", planTypeString));
-            }
-            else
-            {
-                planType = (Constants.PLAN_TYPE)Enum.Parse(typeof(Constants.PLAN_TYPE), planTypeString);
-            }
-
-            string effectiveDateString = entryData[4];
-            if (!ValidatorHelper.IsDateStringValid(effectiveDateString))
-            {
-                throw new ArgumentException(string.Format("The date '{0}' is not valid.", effectiveDateString));
-            }
-            else
-            {
-                effectiveDate = ValidatorHelper.CreateDateFromString(effectiveDateString);
-            }
-
-
-            EnrollmentEntry enrollmentEntry = new EnrollmentEntry(firstName, lastName, dob, planType, effectiveDate);
 
             // This is a placeholder.
             // TODO: Create this list using factory pattern instead.
@@ -90,24 +68,42 @@ namespace EnrollmentApplicationParser
                 new EffectiveDateValidator()
             };
 
-            enrollmentEntry.status = ProcessEntryBR(businessRuleValidators, enrollmentEntry);
+            enrollmentEntry.status = ValidateBusinessRules(businessRuleValidators, enrollmentEntry);
 
             return enrollmentEntry;
         }
 
-        private Constants.STATUS ProcessEntryBR(List<IBusinessRuleValidator> businessRules, EnrollmentEntry entry)
+        private bool ValidateEntryRules(List<IEntryRuleValidator> rules, string[] entries)
+        {
+            bool valid = true;
+
+            foreach (IEntryRuleValidator rule in rules)
+            {
+                valid = rule.ProcessEntryRule(entries);
+            }
+
+            return valid;
+        }
+
+        private Constants.STATUS ValidateBusinessRules(List<IBusinessRuleValidator> rules, EnrollmentEntry entry)
         {
             Constants.STATUS status = Constants.STATUS.ACCEPTED;
 
-            if (businessRules != null && businessRules.Count > 0)
+            foreach (IBusinessRuleValidator rule in rules)
             {
-                foreach (IBusinessRuleValidator rule in businessRules)
-                {
-                    status = rule.ProcessBusinessRule(entry);
-                }
+                status = rule.ProcessBusinessRule(entry);
             }
 
             return status;
+        }
+
+        private DateTime CreateDateFromString(string dateString)
+        {
+            int month = int.Parse(dateString.Substring(0, 2));
+            int day = int.Parse(dateString.Substring(2, 2));
+            int year = int.Parse(dateString.Substring(4, 4));
+
+            return new DateTime(year, month, day);
         }
     }
 }
